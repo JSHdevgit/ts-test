@@ -1,11 +1,9 @@
 <template>
-  <template v-for="(item) in dataArray"  v-bind:key="item" >
-    <example-comp2 :params="item" :ins="rect" @onClickRectBtn="setEvent($event,item)"/>
-  </template>
+    <example-comp2 :params="dataArray" :ins="rect" @onClickRectBtn="setEvent($event)"/>
 </template>
 
 <script lang="ts">
-import Rect, {ParentMenu, MenuBar, UnKnownMenu, DefaultMenu} from '@/script/parentRect';
+import Rect, {ParentMenu, UnKnownMenu, DefaultMenu} from '@/script/parentRect';
 import ChildRect from '@/script/childRect';
 import {ref,onMounted} from 'vue'
 import ExampleComp2 from "@/components/example2.vue";
@@ -64,12 +62,12 @@ export default {
         let ins:DefaultMenu;
         const rowData = rect.check<ParentMenu>(a as ParentMenu);
 
-        if(rowData.childrenMenu?.length > 0) {
+        if(rowData.childrenMenu) {
           ins = new ChildRect();
           const rowDataChildrenMenu: DefaultMenu[] = rowData.childrenMenu;
            rect.addRect(ins, rowData.title).then((e) =>{
-            stack.push(e);
-            setData2(rowDataChildrenMenu as ParentMenu[],ins,e);
+               stack.push(e);
+               setData2(rowDataChildrenMenu as ParentMenu[],ins,e);
           }).catch(() =>{
            })
         }else {
@@ -93,16 +91,18 @@ export default {
     //   // console.log('error',args);
     // }
 
-   function setEvent({key,callBack}:MenuBar,item: ParentMenu){
-     callBack(item.title);
+   function setEvent([{key},item, parent]:any){
      if(key === 1){
        const instance = item.childIns;
        if(instance){
-         instance.addChildrenRect(item);
+         rect.addRect(new ChildRect()).then((e) => {
+           item.childrenMenu.push(e);
+         })
        }
      }else if (key === 2){
        rect.addRect(new ChildRect()).then((e) => {
-         dataArray.value.push(e);
+         // eslint-disable-next-line no-debugger
+         parent.push(e);
        })
        //
      }else {

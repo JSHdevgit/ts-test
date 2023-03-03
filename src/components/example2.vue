@@ -1,23 +1,19 @@
 <template>
-  <div class="main">
-    <div class="rect-container" @click="onClickRect">
-     <div class="rect">
-      <div>{{params.title}}</div>
-      <div v-if="params.more" class="add-circle" @click="addMenu"/>
-    </div>
-    <template v-for="(item, index) in params.childrenMenu" v-bind:key="index">
-      <div class="children-rect" @click="onClickRect({event: $event,item: item})">
-        {{item.title}}
+  <div class="main" v-for="(child,index) in params"  v-bind:key="index">
+    <div class="rect-container" @click="onClickRect($event,child)">
+      <div class="rect">
+        <div>{{child.title}}</div>
+        <div v-if="child.more" class="add-circle" @click="addMenu"/>
       </div>
-    </template>
-  </div>
-    <div class="sub-container">
-      <div class="sub-menu" v-show="show" :class="show ? 'click' : ''">
-        <div class="sub-area" v-for="(v, n, index) of ins.menuBar()" v-bind:key="index" @click="onClickSubMenu(v)">{{
-            v.name
-          }}</div>
+      <div class="sub-container" v-if="child.more">
+        <div class="sub-menu" v-show="show" :class="show ? 'click' : ''">
+          <div class="sub-area" v-for="(v, n, index) of child.menuBar" v-bind:key="index" @click="onClickSubMenu(v,child,params)">{{
+              v.name
+            }}</div>
+        </div>
       </div>
     </div>
+    <example-comp2 :params="child.childrenMenu" @onClickRectBtn="$emit('onClickRectBtn',$event)"/>
   </div>
 </template>
 
@@ -46,10 +42,11 @@ export default {
     function addMenu(){
       show.value = !show.value;
     }
-    function  onClickSubMenu(item:object) {
-      emit('onClickRectBtn',item);
+    function  onClickSubMenu(item:object,child:object, parent: object) {
+      // eslint-disable-next-line no-debugger
+      emit('onClickRectBtn',[item,child,parent]);
     }
-    function onClickRect({event,item}:any = '') {
+    function onClickRect(event:Event,item:any) {
       // eslint-disable-next-line no-debugger
       if(item){
         event.stopPropagation();
@@ -73,9 +70,11 @@ export default {
 <style lang="scss" scoped>
 .main {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  padding-left: 20px;
   .rect-container {
     flex-direction: row;
+    display: flex;
     .rect {
       height: 50px;
       width: 300px;
