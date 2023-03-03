@@ -12,20 +12,24 @@ export default class ParentRect {
     title: string;
     constructor( ins: DefaultMenu, title?:string) {
         this.title = title ?? `Menu ${this.addNum}`;
-        this.menuObj = {title: this.title, childrenMenu:[],menuBar: this.menuBar(), callback: () => {},more:true} ;
+        this.menuObj = {title: this.title, childrenMenu:[],menuBar: this.menuBar(), callback: () => {
+                console.log(this.title)},more:true} ;
 
 
     }
     menuBar() {
         const menuList = ['자식','형제','아무나'];
         return menuList.map((a:string,index:number):MenuBar => {
-            return {name: a, key:index + 1, callBack: (a:string) => {
-                    console.log(`${a} 실행`)}};
+            return {name: a, key:index + 1, callBack: (a:string) => {}};
         })
     }
       async addRect(instance: DefaultMenu, title?: string) {
          this.title = title ?? `Menu ${this.addNum}`;
-          const menu: ParentMenu = {...JSON.parse(JSON.stringify(this.menuObj)), title: this.title, childIns: instance};
+          const menu: ParentMenu = {
+              ...JSON.parse(JSON.stringify(this.menuObj)), title: this.title, childIns: instance, callback: () => {
+                  console.log(`${menu.title} 부모 실행`)
+              }
+          };
           await validateOrReject(this).then(e => {
               this.addNum++;
           }).catch(e => {
@@ -39,7 +43,9 @@ export default class ParentRect {
       }
     addNoneRect(title?:string) {
         this.title = title ?? `UnKnown ${this.addNoNum}`;
-        const menu: UnKnownMenu = {title: this.title, callback: () => {},more: false};
+        const menu: UnKnownMenu = {title: this.title, callback: () => {
+                console.log(`${menu.title}클릭`);
+            },more: false};
         this.addNoNum++
         return menu;
     }
@@ -75,8 +81,17 @@ export interface DefaultMenu {
 
 export interface ParentMenu extends DefaultMenu{
     menuBar: object[],
+    /**
+     * 자식 메뉴
+     */
     childrenMenu: DefaultMenu[],
+    /**
+     * 자식 인스턴스
+     */
     childIns?: DefaultMenu,
+    /**
+     * 메뉴 아이콘 활성화 여부
+     */
     more: boolean,
 
 }

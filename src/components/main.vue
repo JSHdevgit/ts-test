@@ -60,7 +60,6 @@ export default {
 */
      async  function setData2(data: ParentMenu[], instance?:DefaultMenu, menu?:ParentMenu) {
       const stack:ParentMenu[] = [];
-
       for (const a of data) {
         let ins:DefaultMenu;
         const rowData = rect.check<ParentMenu>(a as ParentMenu);
@@ -68,20 +67,21 @@ export default {
         if(rowData.childrenMenu?.length > 0) {
           ins = new ChildRect();
           const rowDataChildrenMenu: DefaultMenu[] = rowData.childrenMenu;
-          rect.addRect(ins, rowData.title).then((e) =>{
+           rect.addRect(ins, rowData.title).then((e) =>{
             stack.push(e);
             setData2(rowDataChildrenMenu as ParentMenu[],ins,e);
-          });
+          }).catch(() =>{
+           })
         }else {
           if(rowData.more){
               await rect.addRect(new ChildRect(), rowData.title).then((e) => {
                 stack.push(e);
+              }).catch(() => {
               });
           }else if(rowData.more === false){
             stack.push(rect.addNoneRect() as ParentMenu);
           }else {
             instance?.addChildrenRect(menu,a.title);
-
           }
         }
       }
@@ -108,7 +108,9 @@ export default {
      }else {
        dataArray.value.push(rect.addNoneRect());
      }
-     localStorage.setItem('data',JSON.stringify(dataArray.value));
+     setTimeout(() => {
+       localStorage.setItem('data',JSON.stringify(dataArray.value));
+     },100)
    }
 
     return {

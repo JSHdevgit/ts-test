@@ -1,13 +1,12 @@
 <template>
   <div class="main">
-    <div class="rect-container">
+    <div class="rect-container" @click="onClickRect">
      <div class="rect">
       <div>{{params.title}}</div>
       <div v-if="params.more" class="add-circle" @click="addMenu"/>
-
     </div>
     <template v-for="(item, index) in params.childrenMenu" v-bind:key="index">
-      <div class="children-rect">
+      <div class="children-rect" @click="onClickRect({event: $event,item: item})">
         {{item.title}}
       </div>
     </template>
@@ -48,14 +47,22 @@ export default {
       show.value = !show.value;
     }
     function  onClickSubMenu(item:object) {
-
-
       emit('onClickRectBtn',item);
+    }
+    function onClickRect({event,item}:any = '') {
+      // eslint-disable-next-line no-debugger
+      if(item){
+        event.stopPropagation();
+        item.callback();
+      }else {
+        props.params.callback();
+      }
     }
     return {
       show,
       addMenu,
-      onClickSubMenu
+      onClickSubMenu,
+      onClickRect
     };
   },
   methods: {
