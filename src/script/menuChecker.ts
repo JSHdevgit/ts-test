@@ -1,4 +1,6 @@
-
+/**
+ * 미사용
+ */
 
 export default class Rect {
 

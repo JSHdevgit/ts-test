@@ -1,27 +1,31 @@
 import {DefaultMenu, MenuBar, ParentMenu} from "@/script/parentRect";
-import {IsString}from 'class-validator';
+import {IsString, MinLength, validateOrReject} from 'class-validator';
 export default class childRect {
 
     childMenuObj: ChildrenMenu;
     addChildrenNum: number = 1;
     callback: () => void;
 
+    @MinLength(1)
     @IsString()
     title: string;
 
     constructor(title?:string) {
         this.title = title ?? `Child ${this.addChildrenNum}`;
-
         this.callback = () => {};
         this.childMenuObj = {title: this.title,  callback: () => {}} ;
 
     }
-    addChildrenRect(item: ParentMenu, title?:string) {
+    async addChildrenRect(item: ParentMenu, title?:string) {
         this.title = title ?? `Child ${this.addChildrenNum}`
-        const menu: ChildrenMenu = {...this.childMenuObj , title: this.title};
-        this.addChildrenNum++
-
-        item.childrenMenu.push(menu);
+        await validateOrReject(this).then((e) => {
+            this.addChildrenNum++
+            const menu: ChildrenMenu = {...this.childMenuObj, title: title ?? `Child ${this.addChildrenNum}`};
+            item.childrenMenu.push(menu);
+        }).catch(e => {
+            console.error('자식에러',e)
+            throw TypeError(e);
+        })
     }
 }
 

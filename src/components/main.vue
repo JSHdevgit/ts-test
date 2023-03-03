@@ -9,7 +9,6 @@ import Rect, {ParentMenu, MenuBar, UnKnownMenu, DefaultMenu} from '@/script/pare
 import ChildRect from '@/script/childRect';
 import {ref,onMounted} from 'vue'
 import ExampleComp2 from "@/components/example2.vue";
-import { validateOrReject} from 'class-validator';
 
 
 export default {
@@ -25,12 +24,16 @@ export default {
       getData();
     })
 
-   function getData() {
+   async function getData() {
       const data = JSON.parse(localStorage.getItem('data')!);
 
-      if(!data || data?.length === 0) return dataArray.value.push(rect.addRect(new ChildRect()));
+      if(!data || data?.length === 0) {
+       await rect.addRect(new ChildRect()).then((e) => {
+         return dataArray.value.push(e);
+       })
+      }
      // setData(data);
-    dataArray.value = setData2(data);
+    dataArray.value = await setData2(data);
 
    }
    /* function setData(data: ParentMenu[]) {
@@ -55,37 +58,25 @@ export default {
       }
    }
 */
-     function setData2(data: ParentMenu[], instance?:DefaultMenu, menu?:ParentMenu) {
+     async  function setData2(data: ParentMenu[], instance?:DefaultMenu, menu?:ParentMenu) {
       const stack:ParentMenu[] = [];
 
-      data.forEach((a) => {
-        // const rowData = a;
+      for (const a of data) {
         let ins:DefaultMenu;
-        // const rowData:ParentMenu = a as ParentMenu;
         const rowData = rect.check<ParentMenu>(a as ParentMenu);
-
-        if(rowData.childrenMenu) {
-          rect.title = rowData.title;
-
-          validateOrReject(rect).then(() => {
-          }).catch((e) =>{
-            console.error('에러:',e);
-          })
-        }
 
         if(rowData.childrenMenu?.length > 0) {
           ins = new ChildRect();
-
-
           const rowDataChildrenMenu: DefaultMenu[] = rowData.childrenMenu;
-          const menu = rect.addRect(ins, rowData.title);
-          stack.push(menu);
-          setData2(rowDataChildrenMenu as ParentMenu[],ins,menu);
-
-
+          rect.addRect(ins, rowData.title).then((e) =>{
+            stack.push(e);
+            setData2(rowDataChildrenMenu as ParentMenu[],ins,e);
+          });
         }else {
           if(rowData.more){
-            stack.push(rect.addRect(new ChildRect(), rowData.title));
+              await rect.addRect(new ChildRect(), rowData.title).then((e) => {
+                stack.push(e);
+              });
           }else if(rowData.more === false){
             stack.push(rect.addNoneRect() as ParentMenu);
           }else {
@@ -93,8 +84,8 @@ export default {
 
           }
         }
-      });
-      return stack;
+      }
+       return stack;
     }
     // function typeCheck<T> (args: T) : T {
     //   console.log(typeof args);
@@ -110,7 +101,9 @@ export default {
          instance.addChildrenRect(item);
        }
      }else if (key === 2){
-       dataArray.value.push(rect.addRect(new ChildRect()));
+       rect.addRect(new ChildRect()).then((e) => {
+         dataArray.value.push(e);
+       })
        //
      }else {
        dataArray.value.push(rect.addNoneRect());

@@ -1,4 +1,4 @@
-import {IsString}from 'class-validator';
+import {IsString, MinLength, validateOrReject, ValidationError} from 'class-validator';
 
 export default class ParentRect {
 
@@ -7,6 +7,7 @@ export default class ParentRect {
     addNum: number = 1;
     addNoNum: number = 1;
 
+    @MinLength(1)
     @IsString()
     title: string;
     constructor( ins: DefaultMenu, title?:string) {
@@ -22,12 +23,20 @@ export default class ParentRect {
                     console.log(`${a} 실행`)}};
         })
     }
-    addRect(instance: DefaultMenu, title?:string) {
-        this.title = title ?? `Menu ${this.addNum}`;
-        const menu: ParentMenu = {...JSON.parse(JSON.stringify(this.menuObj)) , title: this.title ,childIns: instance};
-        this.addNum++;
-        return menu;
-    }
+      async addRect(instance: DefaultMenu, title?: string) {
+         this.title = title ?? `Menu ${this.addNum}`;
+          const menu: ParentMenu = {...JSON.parse(JSON.stringify(this.menuObj)), title: this.title, childIns: instance};
+          await validateOrReject(this).then(e => {
+              this.addNum++;
+          }).catch(e => {
+              console.error('부모에러:',e[0]);
+              throw TypeError(e);
+          })
+          return menu;
+
+
+
+      }
     addNoneRect(title?:string) {
         this.title = title ?? `UnKnown ${this.addNoNum}`;
         const menu: UnKnownMenu = {title: this.title, callback: () => {},more: false};
